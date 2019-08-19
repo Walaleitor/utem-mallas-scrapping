@@ -23,7 +23,6 @@ const obtenerFacultades = async(urlFacultades = 'https://www.utem.cl/facultades/
 
 const obtenerCarreras = async(urlFacultad) => {
     const urlsCarreras = [];
-
     try {
         let response = await fetch(urlFacultad);
         let body = await response.text();
@@ -37,7 +36,6 @@ const obtenerCarreras = async(urlFacultad) => {
         throw err;
     }
     return urlsCarreras;
-
 }
 
 const obtenerMalla = async(urlCarrera) => {
@@ -69,7 +67,9 @@ const obtenerMalla = async(urlCarrera) => {
             let semestre = $('li', element);
             semestre.each(function() {
                 let ramo = $(this).text();
-                ramos.push(ramo);
+                ramos.push({
+                    nombre: ramo
+                });
             })
             semestres.push({
                 numero: index + 1,
@@ -90,6 +90,7 @@ const obtenerMalla = async(urlCarrera) => {
 }
 
 const obtenerJson = async() => {
+    let json;
     try {
         const facultadesUrl = await obtenerFacultades();
         const carrerasUrl = await Promise.all(facultadesUrl.map(async url => {
@@ -104,16 +105,18 @@ const obtenerJson = async() => {
                 carreras
             }
         }))
-        const json = JSON.stringify({
+        json = JSON.stringify({
             facultades: final
         })
-        fs.writeFileSync('data.json', json)
     } catch (err) {
         throw err;
     }
-
+    return json;
 };
 
 
 obtenerJson()
-    .then(r => r);
+    .then(json => {
+        fs.writeFileSync('data.json', json)
+
+    });
